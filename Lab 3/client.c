@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <sys/socket.h> 
+#include <sys/socket.h>
 #include <signal.h>
 #include <unistd.h>
 #include <netinet/in.h>
@@ -48,32 +48,33 @@ int main(int argc,char* argv[])
 		printf("Enter server IP address and server PORT");
 		return 0;
 	}
-	int sock=0,valread; 
-    struct sockaddr_in serv_addr; 
+	int sock=0,valread;
+    struct sockaddr_in serv_addr;
     char buffer[1024] = {0};
-    if((sock = socket(AF_INET, SOCK_STREAM, 0))<0) 
-    { 
-        printf("\n Socket creation error \n"); 
-        return -1; 
+    if((sock = socket(AF_INET, SOCK_STREAM, 0))<0)
+    {
+        printf("\n Socket creation error \n");
+        return -1;
     }
-    serv_addr.sin_family = AF_INET; 
+    serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(atoi(argv[2]));
-    // Convert IPv4 and IPv6 addresses from text to binary form 
-    if(inet_pton(AF_INET, argv[1], &serv_addr.sin_addr)<=0)  
-    { 
-        printf("\nInvalid address/ Address not supported \n"); 
-        return -1; 
+    // Convert IPv4 and IPv6 addresses from text to binary form
+    if(inet_pton(AF_INET, argv[1], &serv_addr.sin_addr)<=0)
+    {
+        printf("\nInvalid address/ Address not supported \n");
+        return -1;
     }
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-    { 
-        printf("\nConnection Failed \n"); 
-        return -1; 
-    }
-
-    printf("Welcome to the trading system\n\n");
-    while(2)
     {
-    	char trade_id[10];
+        printf("\nConnection Failed \n");
+        return -1;
+    }
+		valread = read(sock,buffer,1024);
+    printf("Welcome to the trading system\n");
+		printf("%s",buffer);
+    while(2)             // what the hell is while(2)
+    {
+    	char trade_id[100];
     	char password[100];
     	printf("Enter trading ID: ");
 	    scanf("%s",trade_id);
@@ -82,17 +83,19 @@ int main(int argc,char* argv[])
 
 	    send(sock,trade_id,strlen(trade_id),0);
 	    send(sock,password,strlen(password),0);
-	    valread = read(sock,buffer,1024); 
+	    valread = read(sock,buffer,1024);
 	    if(strcmp(buffer,"Y")==0)
 	    {
-	    	printf("Welcome you are authenticated\n");
+	    	printf("Welcome, you are logged in\n");
 	    	break;
 	    }
 	    else
+			{
 	    	printf("Please enter correct ID and password\n");
+			}
     }
 
     trade();
-    
+
     return 0;
 }

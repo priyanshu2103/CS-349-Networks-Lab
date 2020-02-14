@@ -2,9 +2,9 @@
 #define QUEUE_H_INCLUDED
 
 
-typedef struct _node node;
+typedef struct node node;
 
-typedef struct _queue queue;
+typedef struct queue queue;
 
 queue * create_queue(void);
 node * create_node(int, int, int, int);

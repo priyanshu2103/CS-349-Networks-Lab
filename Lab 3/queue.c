@@ -1,18 +1,18 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include "queue.h"
+//#include "queue.h"
 
-typedef struct _node{
+typedef struct node{
 
         int Item_Id;
         int Trader_Id;
         int Price;
         int count;
-        struct _node * next;
+        struct node * next;
 
 }node;
 
-typedef struct _queue{
+typedef struct queue{
 
         node * start;
 
@@ -41,12 +41,12 @@ node * create_node(int item, int trader, int price, int count){
 }
 
 void pushs(queue * thelist, int item,int  trader,  int price, int count){
-	
+
 	node * file = create_node(item, trader, price, count);
-	
+
         node * point = thelist->start;
         if(point == NULL){
-                
+
                 thelist->start = file;
                 return;
         }
@@ -55,9 +55,9 @@ void pushs(queue * thelist, int item,int  trader,  int price, int count){
         	file->next = point;
         	return;
         }
-        
+
         while(point->next!=NULL && point->next->Price < price){
-        
+
                 point = point->next;
         }
         node * temp = point->next;
@@ -67,24 +67,24 @@ void pushs(queue * thelist, int item,int  trader,  int price, int count){
 }
 
 void pushb(queue * thelist, int item, int trader,  int price, int count){
-	
+
 	node * file = create_node(item, trader, price, count);
-	
+
         node * point = thelist->start;
         if(point == NULL){
-                
+
                 thelist->start = file;
                 return;
         }
         if(point->Price < price){
-        	
+
         	thelist->start = file;
         	file->next = point;
         	return;
         }
-        
+
         while(point->next != NULL && point->next->Price > price){
-        
+
                 point = point->next;
         }
         node * temp = point->next;
@@ -95,7 +95,7 @@ void pushb(queue * thelist, int item, int trader,  int price, int count){
 }
 
 void pop(queue * thelist){
-	
+
 	if(thelist->start == NULL) return;
 	node * temp = thelist->start;
  	thelist->start = thelist->start->next;
@@ -107,12 +107,10 @@ void print_queue(queue * thelist){
 
         node * point = thelist->start;
         while(point!=NULL){
-                
+
                 printf("Item: %d Trader: %d  Price: %d  Count: %d \n ", point->Item_Id, point->Trader_Id, point->Price, point->count  );
                 point = point->next;
         }
         printf("\n");
 
 }
-
-
