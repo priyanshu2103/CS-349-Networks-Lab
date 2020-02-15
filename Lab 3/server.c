@@ -30,78 +30,150 @@ tqueue * trans;
 //......................         in case of return buffer;
 //......................can resolve if it works as for available()
 //......................make the auth.txt file
-char * available(char *buffer)
+//.....................................
+//...................................
+//........................................
+//.......................................
+//.....................................
+//...........................................
+//........................................
+//Change input method to file based rather than command based
+//Trade_id may be string, not clearly mentioned in problem
+// ALL THIS MAY STILL NOT WORK WHILE TAKING INPUT FROM FILE AS THE SPEED OF INPUT WILL BE VERY HIGH
+// MAY USE SLEEP FUNCTION FOR THIS
+// MAKE SERVER CODE ROBUST, CURRENTLY IT STOPS IF WRONG INPUT FROM CLIENT,
+// IT SHOULD NEVER STOP, SEE HOW TO SUPPRESS ERRORS ................................
+//...................................................
+//...........VERY VERY IMPORTANT...............
+//...........................................
+//...................................................
+//ALSO TRY TO ENSURE THAT IF SERVER GOES DOWN CLIENT SHOULD BE INFORMED AND CLOSED
+//SHOULD KEEP DATA IN FILE AS IF SERVER GOES DOWN FOR ANY REASON, ALL DATA IS LOST
+//.....................................................
+//TAKE CARE TO TRIM THE STRINGS NEEDED TO BE SENT OR RECEIVED IN SPECIAL FORMAT
+//.....................................................
+void send_packet(int sd,char buffer[],int k)
 {
-  // char buffer[5000];
+  char temp[1000];
+  int l=strlen(buffer);
+  char len[10];
+  snprintf(len,1000,"%05d",l);
+  strcpy(temp,len);
+  strcat(temp,buffer);
+  write(sd,temp,strlen(temp));
+  printf("$$$$$%s\n",temp);
+}
+void available(int sd)
+{
+  // printf("hello\n");
+  char buffer[1000];
+  bzero(buffer,1001);
   snprintf(buffer,1000,"These items are available for buying\n");
+  write(sd,buffer,strlen(buffer));
   bool flag = false;
   for(int i = 1; i  < 11; i++)
   {
-    if(sell[i]->start!=NULL)
+    if(sell[i] && sell[i]->start!=NULL)
     {
+      //printf("%d sell\n",i);
+      bzero(buffer,1001);
       snprintf(buffer,1000,"%d    ", i);
+      write(sd,buffer,strlen(buffer));
       flag = true;
     }
   }
   if(!flag)
   {
-    snprintf(buffer,1000,"<-- No items available --> \n");
+
+    bzero(buffer,1001);
+    snprintf(buffer,1000,"<-- No items available -->\n");
+    write(sd,buffer,strlen(buffer));
+    // write(sd,buffer,strlen(buffer);
   }
   flag  = false;
+  bzero(buffer,1001);
   snprintf(buffer,1000,"These items are available for selling\n");
+  write(sd,buffer,strlen(buffer));
+  // write(sd,buffer,strlen(buffer);
   for(int i = 1; i  < 11; i++)
   {
-    if(buy[i]->start!=NULL)
+    if(buy[i] && buy[i]->start!=NULL)
     {
+      bzero(buffer,1001);
       snprintf(buffer,1000,"%d     ", i);
+      write(sd,buffer,strlen(buffer));
       flag = true;
     }
   }
   if(!flag)
   {
-    snprintf(buffer,1000,"<-- No items available --> \n");
+    bzero(buffer,1001);
+    snprintf(buffer,1000,"<-- No items available -->\n");
+    write(sd,buffer,strlen(buffer));
+    //for(int i= 0 ; i < 30000; i++){}
+    // write(sd,buffer,strlen(buffer);
   }
-  snprintf(buffer,1000,"On sending a buy/sell request for any of the items not listed in the respective fields, your request will be stored and served asap \n");
-  return buffer;
+  bzero(buffer,1001);
+  snprintf(buffer,1000,"\nOn sending a buy/sell request for any of the items not listed in the respective fields, your request will be stored and served asap\n");
+  write(sd,buffer,strlen(buffer));
+  // write(sd,buffer,strlen(buffer);
+ // printf("%s\n",buffer);
+  //return buffer;
+  // bzero(buffer,1001);
+  // snprintf(buffer,1000,".");
+  write(sd,"^",1);
 }
 
-char * serve_buy_request(int item, int trader, int price, int quantity)
+void serve_buy_request(int sd,int item, int trader, int price, int quantity)
 {
-  char buffer[5000];
+  char buffer[1000];
   bool flag=false;
-  while (sell[item]->start != NULL && sell[item]->start->Price <= price && quantity > 0)
+  if(sell[item] && sell[item]->start)
+  {
+    printf("exists\n");
+  }
+  while (sell[item] && sell[item]->start != NULL && sell[item]->start->Price <= price && quantity > 0)
   {
     flag=true;
     if(sell[item]->start->count > quantity)
     {
       sell[item]->start->count = sell[item]->start->count - quantity;
       push(trans, item, sell[item]->start->Trader_Id, trader, sell[item]->start->Price, quantity);
-      snprintf(buffer,1000,"%d number of Item %d bought from %d at %dRupees \n", quantity, item, sell[item]->start->Trader_Id, price);
+      bzero(buffer,1001);
+      snprintf(buffer,1000,"%d number of Item %d bought from %d at Rs. %d\n", quantity, item, sell[item]->start->Trader_Id, price);
+      write(sd,buffer,strlen(buffer));
       quantity = 0;
     }
     else
     {
       quantity = quantity - sell[item]->start->count;
       push(trans, item, sell[item]->start->Trader_Id , trader, sell[item]->start->Price, sell[item]->start->count);
-      snprintf(buffer,1000,"%d number of Item %d bought from %d at %dRupees \n", sell[item]->start->count, item, sell[item]->start->Trader_Id, price);
+      bzero(buffer,1001);
+      snprintf(buffer,1000,"%d number of Item %d bought from %d at Rs. %d\n", sell[item]->start->count, item, sell[item]->start->Trader_Id, price);
+      write(sd,buffer,strlen(buffer));
       sell[item]->start->count = 0;
       pop(sell[item]);
     }
   }
   if(flag==false)
   {
+    bzero(buffer,1001);
     snprintf(buffer,1000,"No current seller, your request will be stored and served asap \n");
+    write(sd,buffer,strlen(buffer));
   }
   if(quantity > 0)
   {
+    printf("bef push\n");
     pushb(buy[item], item, trader, price, quantity);
+    printf("aft push\n");
   }
-  return buffer;
+  write(sd,"^",1);
+  //return buffer;
 }
 
-char * serve_sell_request(int item, int trader, int price, int quantity)
+void serve_sell_request(int sd,int item, int trader, int price, int quantity)
 {
-  char buffer[5000];
+  char buffer[1000];
   bool flag=false;
   while (buy[item]->start != NULL && buy[item]->start->Price >= price && quantity > 0)
   {
@@ -110,73 +182,99 @@ char * serve_sell_request(int item, int trader, int price, int quantity)
     {
       buy[item]->start->count = buy[item]->start->count - quantity;
       push(trans, item, trader,  buy[item]->start->Trader_Id, buy[item]->start->Price, quantity);
-      snprintf(buffer,1000,"%d number of Item %d sold to %d at %dRupees \n", quantity, item, buy[item]->start->Trader_Id, price);
+      bzero(buffer,1001);
+      snprintf(buffer,1000,"%d number of Item %d sold to %d at Rs. %d\n", quantity, item, buy[item]->start->Trader_Id, price);
+      write(sd,buffer,strlen(buffer));
       quantity = 0;
     }
     else
     {
       quantity = quantity - buy[item]->start->count;
       push(trans, item, trader, buy[item]->start->Trader_Id , sell[item]->start->Price, sell[item]->start->count);
-      snprintf(buffer,1000,"%d number of Item %d sold to %d at %dRupees \n", buy[item]->start->count, item, buy[item]->start->Trader_Id, price);
+      bzero(buffer,1001);
+      snprintf(buffer,1000,"%d number of Item %d sold to %d at Rs. %d\n", buy[item]->start->count, item, buy[item]->start->Trader_Id, price);
+      write(sd,buffer,strlen(buffer));
       buy[item]->start->count = 0;
       pop(buy[item]);
     }
   }
   if(flag==false)
   {
+    bzero(buffer,1001);
     snprintf(buffer,1000,"No current buyer, your request will be stored and served asap \n");
+    write(sd,buffer,strlen(buffer));
   }
   if(quantity > 0)
   {
     pushs(sell[item], item, trader, price, quantity);
   }
-  return buffer;
+  write(sd,"^",1);
+//  return buffer;
 }
 
-char * view_order()
+void view_order(int sd)
 {
-  char buffer[5000];
+  char buffer[1000];
   for(int i = 1; i < 11; i++)
   {
+    bzero(buffer,1001);
     snprintf(buffer,1000,"ItemID: %d     ",  i);
+    write(sd,buffer,strlen(buffer));
     if(buy[i]->start != NULL)
     {
+      bzero(buffer,1001);
       snprintf(buffer,1000,"Best Buy: %d     ",  buy[i]->start->Price );
+      write(sd,buffer,strlen(buffer));
     }
     else
     {
+      bzero(buffer,1001);
       snprintf(buffer,1000,"<-- No buyers -->");
+      write(sd,buffer,strlen(buffer));
     }
     if(sell[i]->start!=NULL )
     {
+      bzero(buffer,1001);
       snprintf(buffer,1000,"Best Sell: %d \n", sell[i]->start->Price);
+      write(sd,buffer,strlen(buffer));
     }
     else
     {
+      bzero(buffer,1001);
       snprintf(buffer,1000,"<-- No sellers --> \n");
+      write(sd,buffer,strlen(buffer));
     }
   }
-  return buffer;
+  write(sd,"^",1);
+  // return buffer;
 }
 
-char * trade_status(int trader)
+void trade_status(int sd,int trader)
 {
-  char buffer[5000];
+  char buffer[1000];
+  bzero(buffer,1001);
   snprintf(buffer,1000,"Settled Transactions: \n");
+  write(sd,buffer,strlen(buffer));
   tnode * temp = trans->start;
   while(temp != NULL)
   {
     if(temp->buyer == trader)
     {
-      snprintf(buffer,1000,"%d number of Item %d bought from %d at %dRupees \n", temp->quantity, temp->item, temp->seller, temp->price);
+      bzero(buffer,1001);
+      snprintf(buffer,1000,"%d number of Item %d bought from %d at Rs. %d\n", temp->quantity, temp->item, temp->seller, temp->price);
+      write(sd,buffer,strlen(buffer));
     }
     if(temp->seller == trader)
     {
-      snprintf(buffer,1000,"%d number of Item %d sold to %d\n at %dRupees\n", temp->quantity, temp->item, temp->buyer, temp->price);
+      bzero(buffer,1001);
+      snprintf(buffer,1000,"%d number of Item %d sold to %d\n at Rs. %d\n", temp->quantity, temp->item, temp->buyer, temp->price);
+      write(sd,buffer,strlen(buffer));
     }
     temp = temp->next;
   }
+  bzero(buffer,1001);
   snprintf(buffer,1000,"\nPending Transactions: \n");
+  write(sd,buffer,strlen(buffer));
   for(int i = 1; i < 11; i++)
   {
     node * temp = buy[i]->start;
@@ -184,7 +282,9 @@ char * trade_status(int trader)
     {
       if(temp->Trader_Id == trader)
       {
-        snprintf(buffer,1000,"%d number of Item %d are queued for buying at price %d\n", temp->count, temp->Item_Id, temp->Price);
+        bzero(buffer,1001);
+        snprintf(buffer,1000,"%d number of Item %d are queued for buying at price Rs. %d\n", temp->count, temp->Item_Id, temp->Price);
+        write(sd,buffer,strlen(buffer));
       }
       temp = temp->next;
     }
@@ -196,16 +296,34 @@ char * trade_status(int trader)
     {
       if(temp->Trader_Id == trader)
       {
+        bzero(buffer,1001);
         snprintf(buffer,1000,"%d number of Item %d are queued for selling at price %d\n", temp->count, temp->Item_Id, temp->Price);
+        write(sd,buffer,strlen(buffer));
       }
       temp = temp->next;
     }
   }
-  return buffer;
+  write(sd,"^",1);
+  // return buffer;
 }
 
-bool search(char id[],char pass[])
+bool search(char buffer[])      // ...............change this function
 {
+  //return true;
+  //printf("%s .... %s\n",id,pass);
+  // int l=strlen(id);
+  // id[l]=' ';
+  // l++;
+  // int m=0;
+  // while(pass[m]!='\0')
+  // {
+  //   id[l+m]=pass[m];
+  //   m++;
+  // }
+  // id[l+m]='\0';
+  // // id[l+m+1]='\0';
+  // printf("%s\n",id);
+  strcat(buffer,"\n");
   FILE * fp=fopen("auth.txt","r");
   if(!fp)
   {
@@ -213,17 +331,36 @@ bool search(char id[],char pass[])
   }
   char temp[1024];
   bool flag=false;
+  printf("buff-0000-%s",buffer);
   while(fgets(temp, INT_MAX, fp) != NULL)
   {
-    if(strcmp(strtok(temp, " "), id) == 0)
+    // int len=strlen(temp);
+    //temp[len-]='\0';
+     printf("temp+0000+%s",temp);
+    // char a[100],b[100];
+    // int j=0,k=0;
+    // while(temp[j]!=' ')
+    // {
+    //   a[j++]=temp[j++];
+    // }
+    // a[j]='\0';
+    // j++;
+    // while(temp[j]!='\n')
+    // {
+    //   b[k++]=temp[j++];
+    // }
+    // b[k]='\0';
+    // printf("%s +++ %s \n",a,b);
+    if(strcmp(temp, buffer) == 0)
     {
-      if(strcmp(strtok(temp, " "), pass) == 0)  //............may be wrong not sure about strtok
-      {
+      //if(strcmp(b, pass) == 0)  //............may be wrong not sure about strtok
+      //{
         flag=true;
-      }
+      //}
       break;
     }
   }
+  fclose(fp);
   return flag;
 }
 
@@ -237,6 +374,7 @@ int main(int argc, char *argv[])
     sell[i] = create_queue();
     buy[i] = create_queue();
   }
+  trans=create_tqueue();
   if(argc<2)
   {
     printf("Please enter server port number\n");
@@ -386,75 +524,138 @@ int main(int argc, char *argv[])
         }
         else
         {
+          buffer[valread]='\0';
+          // printf("%s buff\n",buffer);
           if(login[i]!=-1)       // logged in
           {
             int t_id=login[i];
-            valread=read(sd,buffer,1024);
+            // printf("%d tid\n",t_id);
+            // valread=read(sd,buffer,1024);
+            // buffer[valread]='\0';
+            // printf("%s\n",buffer);
             if(strcmp(buffer,AVAILABLE)==0)      // ................not sure if this strcmp works or not
             {
-              char *t;
-              char *resp=available(t);
-              send(sd,resp,strlen(resp),0);
+              //printf("%s.,.,.,\n",buffer);
+              // char *t;
+              available(sd);
+              //send(sd,resp,strlen(resp),0);
             }
             else if(strcmp(buffer,BUY_REQUEST)==0)
             {
               char *mess="Send details for buying\n";
-              send(sd,mess,strlen(mess),0);
+              write(sd,mess,strlen(mess));
               int item,trader,price,quantity;
-              valread=read(sd,buffer,1024);
-              item=atoi(buffer);
               trader=t_id;
-              valread=read(sd,buffer,1024);
-              price=atoi(buffer);
-              valread=read(sd,buffer,1024);
-              quantity=atoi(buffer);
-              char *resp=serve_buy_request(item,trader,price,quantity);
-              send(sd,resp,strlen(resp),0);
+              valread=read(sd,buffer,1000);
+              buffer[valread]='\0';
+              // printf("buffer is %s\n",buffer);
+              int j=0,k=0,l=0;
+              char t1[100],t2[100],t3[100];
+              while(buffer[j]!='#')
+              {
+                t1[j]=buffer[j];
+                j++;
+              }
+              t1[j]='\0';
+              // printf("item is %s\n",t1);
+              item=atoi(t1);
+              j++;
+              while(buffer[j]!='#')
+              {
+                t2[k]=buffer[j];
+                k++;
+                j++;
+              }
+              t2[k]='\0';
+              // printf("price is %s\n",t2);
+              price=atoi(t2);
+              j++;
+              while(buffer[j]!='#')
+              {
+                t3[l]=buffer[j];
+                l++;
+                j++;
+              }
+              t3[l]='\0';
+              // printf("quantity is %s\n",t3);
+              quantity=atoi(t3);
+              printf("buy det %d ,, %d ,, %d ,, %d\n",item,trader,price,quantity);
+              serve_buy_request(sd,item,trader,price,quantity);
+              //send(sd,resp,strlen(resp),0);
             }
             else if(strcmp(buffer,SELL_REQUEST)==0)
             {
               char *mess="Send details for selling\n";
-              send(sd,mess,strlen(mess),0);
+              write(sd,mess,strlen(mess));
               int item,trader,price,quantity;
-              valread=read(sd,buffer,1024);
-              item=atoi(buffer);
               trader=t_id;
               valread=read(sd,buffer,1024);
-              price=atoi(buffer);
-              valread=read(sd,buffer,1024);
-              quantity=atoi(buffer);
-              char *resp=serve_sell_request(item,trader,price,quantity);
-              send(sd,resp,strlen(resp),0);
+              buffer[valread]='\0';
+              int j=0,k=0,l=0;
+              char t1[100],t2[100],t3[100];
+              while(buffer[j]!='#')
+              {
+                t1[j]=buffer[j];
+                j++;
+              }
+              t1[j]='\0';
+              item=atoi(t1);
+              j++;
+              while(buffer[j]!='#')
+              {
+                t2[k]=buffer[j];
+                k++;
+                j++;
+              }
+              t2[k]='\0';
+              price=atoi(t2);
+              j++;
+              while(buffer[j]!='#')
+              {
+                t3[l]=buffer[j];
+                l++;
+                j++;
+              }
+              t3[l]='\0';
+              quantity=atoi(t3);
+              printf("sell det %d ,, %d ,, %d ,, %d\n",item,trader,price,quantity);
+              serve_sell_request(sd,item,trader,price,quantity);
+              //send(sd,resp,strlen(resp),0);
             }
             else if(strcmp(buffer,VIEW_ORDER_STATUS)==0)
             {
-              char *resp=view_order();
-              send(sd,resp,strlen(resp),0);
+              view_order(sd);
+              //send(sd,resp,strlen(resp),0);
             }
             else if(strcmp(buffer,VIEW_TRADE_STATUS)==0)
             {
-              char *resp=trade_status(t_id);
-              send(sd,resp,strlen(resp),0);
+              trade_status(sd,t_id);
+              //send(sd,resp,strlen(resp),0);
             }
           }
           else         // login
           {
-            char id[100],pass[100];
-            valread=read(sd,pass,1024);
-            if(search(buffer,pass))
+            // printf("login module\n");
+            // char id[100],pass[100];
+            // valread=read(sd,pass,1024);
+            // pass[valread]='\0';
+            //printf("%s\n",pass);
+            if(search(buffer))  // buffer is of the form 1 abc
             {
-              int t_id=0;
-              int j=0;
-              while(buffer[j]!=' ' || buffer[j]!='\0')  //.............................. may be errenous as maybe buffer is not null terminated
-              {
-                id[j++]=buffer[j++];
-              }
-              id[j]='\0';
+              int t_id;
+              // int j=0;
+              // while(buffer[j]!=' ' && buffer[j]!='\0')  //.............................. may be errenous as maybe buffer is not null terminated
+              // {
+              //   id[j++]=buffer[j++];
+              // }
+              // id[j]='\0';
+              //printf("%s\n",buffer);
               // for(int l=j-1;l>=0;l--)
               // {
               //   t_id+=(int)(id[l])*pow(10,l);
               // }
-              t_id=atoi(id);
+              t_id=atoi(buffer);
+              //printf("%d\n",t_id);
               login[i]=t_id;
               char *mess="Y";
               send(sd , mess , strlen(mess) , 0 );

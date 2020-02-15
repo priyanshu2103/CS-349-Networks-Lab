@@ -11,34 +11,7 @@
 
 void trade()
 {
-	printf("Choose one of the following:\n");
-    printf("Enter 1 to see all the buyable items\n");
-    printf("Enter 2 to see all the sellable items\n");
-    printf("Enter 3 to send buy request\n");
-    printf("Enter 4 to send sell request\n");
-    printf("Enter 5 to view order status\n");
-    printf("Enter 6 to view trade status\n");
 
-    int choice;
-    scanf("%d",&choice);
-
-    // switch choice
-    // {
-    // 	case 1:
-    // 		break;
-    // 	case 2:
-    // 		break;
-    // 	case 3:
-    // 		break;
-    // 	case 4:
-    // 		break;
-    // 	case 5:
-    // 		break;
-    // 	case 6:
-    // 		break;
-    // 	default:
-    // 		break;
-    // }
 }
 
 int main(int argc,char* argv[])
@@ -50,7 +23,7 @@ int main(int argc,char* argv[])
 	}
 	int sock=0,valread;
     struct sockaddr_in serv_addr;
-    char buffer[1024] = {0};
+    char buffer[1000] = {0};
     if((sock = socket(AF_INET, SOCK_STREAM, 0))<0)
     {
         printf("\n Socket creation error \n");
@@ -69,10 +42,11 @@ int main(int argc,char* argv[])
         printf("\nConnection Failed \n");
         return -1;
     }
-		valread = read(sock,buffer,1024);
-    printf("Welcome to the trading system\n");
-		printf("%s",buffer);
-    while(2)             // what the hell is while(2)
+	valread = read(sock,buffer,1000);
+	buffer[valread]='\0';
+	printf("Welcome to the trading system\n");
+	printf("%s",buffer);
+    while(2)
     {
     	char trade_id[100];
     	char password[100];
@@ -80,22 +54,116 @@ int main(int argc,char* argv[])
 	    scanf("%s",trade_id);
 	    printf("Enter your password: ");
 	    scanf("%s",password);
+			char response[1000];
+			strcpy(response,trade_id);
+			strcat(response," ");
+			strcat(response,password);
+			// strcat(response,"^");
+	    write(sock,response,strlen(response));
+			// sleep(2.5);
+	    // send(sock,password,strlen(password),0);
 
-	    send(sock,trade_id,strlen(trade_id),0);
-	    send(sock,password,strlen(password),0);
-	    valread = read(sock,buffer,1024);
+
+	    valread = read(sock,buffer,1000);
+      	buffer[valread]='\0';
+      	printf("%s\n",buffer);
 	    if(strcmp(buffer,"Y")==0)
 	    {
 	    	printf("Welcome, you are logged in\n");
 	    	break;
 	    }
-	    else
+	    else if(strcmp(buffer,"N")==0)
 			{
-	    	printf("Please enter correct ID and password\n");
+				printf("Please enter correct ID and password\n");
 			}
     }
 
-    trade();
+    // trade();
+	while(2)
+	{
+		printf("Choose one of the following:\n");
+		printf("Enter 1 to see all the buyable and sellable items\n");
+		// printf("Enter 2 to see all the sellable items\n");
+		printf("Enter 2 to send buy request\n");
+		printf("Enter 3 to send sell request\n");
+		printf("Enter 4 to view order status\n");
+		printf("Enter 5 to view trade status\n");
+		printf("Enter 6 to exit\n");
 
-    return 0;
+		int choice;
+		char t[100];
+		scanf("%d",&choice);
+		if(choice==6)
+		{
+			printf("logging off\n");
+			break;
+		}
+		snprintf(t,100,"%d",choice);
+		write(sock,t,strlen(t));
+		while(1)
+		{
+			char b[1000];
+			bzero(b,1001);
+			valread = read(sock,b,1000);
+			b[valread]='\0';
+			int j=0;
+			if(choice==1 || choice==4 || choice==5)
+			{
+				while(j<strlen(b) && b[j]!='^')
+				{
+					printf("%c",b[j]);
+					j++;
+				}
+				// printf("%s\n",b);
+				if(j<strlen(b) && b[j]=='^')
+				{
+					//printf("ksjksd");
+					break;
+				}
+				// printf("%s\n",buffer);
+			}
+			else if(choice==2 || choice==3)
+			{
+				while(j<strlen(b))
+				{
+					printf("%c",b[j]);
+					j++;
+				}
+				char it[100],pri[100],quan[100],ans[1000];
+				printf("\nEnter item id: ");
+				scanf("%s",it);
+				//write(sock,it,strlen(it));
+				printf("\nEnter price: ");
+				scanf("%s",pri);
+				//write(sock,pri,strlen(pri));
+				printf("\nEnter quantity: ");
+				scanf("%s",quan);
+				printf("\n");
+				strcpy(ans,it);
+				strcat(ans,"#");
+				strcat(ans,pri);
+				strcat(ans,"#");
+				strcat(ans,quan);
+				strcat(ans,"#");
+				write(sock,ans,strlen(ans));
+				bzero(b,1001);
+				valread = read(sock,b,1000);
+				b[valread]='\0';
+				j=0;
+				while(j<strlen(b) && b[j]!='^')
+				{
+					printf("%c",b[j]);
+					j++;
+				}
+				// printf("%s\n",b);
+				// if(j<strlen(b) && b[j]=='^')
+				// {
+				// 	//printf("ksjksd");
+				// 	break;
+				// }
+				break;
+			}
+		}
+	}
+  return 0;
 }
