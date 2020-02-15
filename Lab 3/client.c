@@ -11,34 +11,7 @@
 
 void trade()
 {
-	printf("Choose one of the following:\n");
-    printf("Enter 1 to see all the buyable items\n");
-    printf("Enter 2 to see all the sellable items\n");
-    printf("Enter 3 to send buy request\n");
-    printf("Enter 4 to send sell request\n");
-    printf("Enter 5 to view order status\n");
-    printf("Enter 6 to view trade status\n");
-
-    int choice;
-    scanf("%d",&choice);
-
-    // switch choice
-    // {
-    // 	case 1:
-    // 		break;
-    // 	case 2:
-    // 		break;
-    // 	case 3:
-    // 		break;
-    // 	case 4:
-    // 		break;
-    // 	case 5:
-    // 		break;
-    // 	case 6:
-    // 		break;
-    // 	default:
-    // 		break;
-    // }
+	
 }
 
 int main(int argc,char* argv[])
@@ -69,10 +42,11 @@ int main(int argc,char* argv[])
         printf("\nConnection Failed \n");
         return -1;
     }
-		valread = read(sock,buffer,1024);
-    printf("Welcome to the trading system\n");
-		printf("%s",buffer);
-    while(2)             // what the hell is while(2)
+	valread = read(sock,buffer,1024);
+	buffer[valread]='\0';
+	printf("Welcome to the trading system\n");
+	printf("%s",buffer);
+    while(2)
     {
     	char trade_id[100];
     	char password[100];
@@ -83,19 +57,65 @@ int main(int argc,char* argv[])
 
 	    send(sock,trade_id,strlen(trade_id),0);
 	    send(sock,password,strlen(password),0);
+
+
 	    valread = read(sock,buffer,1024);
+      	buffer[valread]='\0';
+      	printf("%s\n",buffer);
 	    if(strcmp(buffer,"Y")==0)
 	    {
 	    	printf("Welcome, you are logged in\n");
 	    	break;
 	    }
-	    else
-			{
-	    	printf("Please enter correct ID and password\n");
-			}
+	    else if(strcmp(buffer,"N")==0)
+		{
+			printf("Please enter correct ID and password\n");
+		}
     }
 
-    trade();
+    // trade();
+	while(2)
+	{
+		printf("Choose one of the following:\n");
+		printf("Enter 1 to see all the buyable items\n");
+		printf("Enter 2 to see all the sellable items\n");
+		printf("Enter 3 to send buy request\n");
+		printf("Enter 4 to send sell request\n");
+		printf("Enter 5 to view order status\n");
+		printf("Enter 6 to view trade status\n");
+		printf("Enter 7 to exit\n");
+
+		int choice;
+		char t[100];
+		scanf("%d",&choice);
+		if(choice==7)
+			break;
+		snprintf(t,100,"%d",choice);
+		send(sock,t,strlen(t),0);
+		// valread = read(sock,buffer,1000);
+		// 	buffer[valread]='\0';
+		// 	printf("%s!!!!!!!!	\n",buffer);
+		// 	valread = read(sock,buffer,1000);
+		// 	buffer[valread]='\0';
+		// 	printf("%s!!!!!!!!	\n",buffer);
+		// 	valread = read(sock,buffer,1000);
+		// 	buffer[valread]='\0';
+		// 	printf("%s!!!!!!!!	\n",buffer);
+		while(2)
+		{
+			char b[255];
+			bzero(b,256);
+			valread = read(sock,b,255);
+			b[valread]='\0';
+			printf("%s!!!!!!!!	\n",b);
+			if(strcmp(b,".")==0)
+			{
+				printf("ksjksd");
+				break;
+			}
+			// printf("%s\n",buffer);
+		}
+	}
 
     return 0;
 }
