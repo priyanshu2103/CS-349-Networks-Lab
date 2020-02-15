@@ -8,12 +8,6 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
-void trade()
-{
-
-}
-
 int main(int argc,char* argv[])
 {
 	if(argc<3)
@@ -22,64 +16,63 @@ int main(int argc,char* argv[])
 		return 0;
 	}
 	int sock=0,valread;
-    struct sockaddr_in serv_addr;
-    char buffer[1000] = {0};
-    if((sock = socket(AF_INET, SOCK_STREAM, 0))<0)
-    {
-        printf("\n Socket creation error \n");
-        return -1;
-    }
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(atoi(argv[2]));
-    // Convert IPv4 and IPv6 addresses from text to binary form
-    if(inet_pton(AF_INET, argv[1], &serv_addr.sin_addr)<=0)
-    {
-        printf("\nInvalid address/ Address not supported \n");
-        return -1;
-    }
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-    {
-        printf("\nConnection Failed \n");
-        return -1;
-    }
+	struct sockaddr_in serv_addr;
+	char buffer[1000] = {0};
+	if((sock = socket(AF_INET, SOCK_STREAM, 0))<0)
+	{
+		printf("\n Socket creation error \n");
+		return -1;
+	}
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_port = htons(atoi(argv[2]));
+	// Convert IPv4 and IPv6 addresses from text to binary form
+	if(inet_pton(AF_INET, argv[1], &serv_addr.sin_addr)<=0)
+	{
+		printf("\nInvalid address/ Address not supported \n");
+		return -1;
+	}
+	if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+	{
+		printf("\nConnection Failed \n");
+		return -1;
+	}
 	valread = read(sock,buffer,1000);
 	buffer[valread]='\0';
 	printf("Welcome to the trading system\n");
 	printf("%s",buffer);
-    while(2)
-    {
-    	char trade_id[100];
-    	char password[100];
-    	printf("Enter trading ID: ");
-	    scanf("%s",trade_id);
-	    printf("Enter your password: ");
-	    scanf("%s",password);
-			char response[1000];
-			strcpy(response,trade_id);
-			strcat(response," ");
-			strcat(response,password);
-			// strcat(response,"^");
-	    write(sock,response,strlen(response));
-			// sleep(2.5);
-	    // send(sock,password,strlen(password),0);
+	// Login part
+	while(1)
+	{
+		char trade_id[100];
+		char password[100];
+		printf("Enter trading ID: ");
+		scanf("%s",trade_id);
+		printf("Enter your password: ");
+		scanf("%s",password);
+		char response[1000];
+		strcpy(response,trade_id);
+		strcat(response," ");
+		strcat(response,password);
+		// strcat(response,"^");
+		write(sock,response,strlen(response));
+		// sleep(2.5);
+		// send(sock,password,strlen(password),0);
 
-
-	    valread = read(sock,buffer,1000);
-      	buffer[valread]='\0';
-      	printf("%s\n",buffer);
-	    if(strcmp(buffer,"Y")==0)
-	    {
-	    	printf("Welcome, you are logged in\n");
-	    	break;
-	    }
-	    else if(strcmp(buffer,"N")==0)
-			{
-				printf("Please enter correct ID and password\n");
-			}
-    }
-
-    // trade();
-	while(2)
+		valread = read(sock,buffer,1000);
+		buffer[valread]='\0';
+		// printf("%s\n",buffer);
+		if(strcmp(buffer,"Y")==0)
+		{
+			printf("Welcome, you are logged in\n");
+			break;
+		}
+		else if(strcmp(buffer,"N")==0)
+		{
+			printf("Please enter correct ID and password\n");
+		}
+	}
+	// Trading part
+	while(1)
 	{
 		printf("Choose one of the following:\n");
 		printf("Enter 1 to see all the buyable and sellable items\n");
@@ -165,5 +158,5 @@ int main(int argc,char* argv[])
 			}
 		}
 	}
-  return 0;
+	return 0;
 }

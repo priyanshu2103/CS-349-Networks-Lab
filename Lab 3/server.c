@@ -52,17 +52,17 @@ tqueue * trans;
 //.....................................................
 //TAKE CARE TO TRIM THE STRINGS NEEDED TO BE SENT OR RECEIVED IN SPECIAL FORMAT
 //.....................................................
-void send_packet(int sd,char buffer[],int k)
-{
-  char temp[1000];
-  int l=strlen(buffer);
-  char len[10];
-  snprintf(len,1000,"%05d",l);
-  strcpy(temp,len);
-  strcat(temp,buffer);
-  write(sd,temp,strlen(temp));
-  printf("$$$$$%s\n",temp);
-}
+// void send_packet(int sd,char buffer[],int k)
+// {
+//   char temp[1000];
+//   int l=strlen(buffer);
+//   char len[10];
+//   snprintf(len,1000,"%05d",l);
+//   strcpy(temp,len);
+//   strcat(temp,buffer);
+//   write(sd,temp,strlen(temp));
+//   printf("$$$$$%s\n",temp);
+// }
 void available(int sd)
 {
   // printf("hello\n");
@@ -128,10 +128,10 @@ void serve_buy_request(int sd,int item, int trader, int price, int quantity)
 {
   char buffer[1000];
   bool flag=false;
-  if(sell[item] && sell[item]->start)
-  {
-    printf("exists\n");
-  }
+  // if(sell[item] && sell[item]->start)
+  // {
+  //   printf("exists\n");
+  // }
   while (sell[item] && sell[item]->start != NULL && sell[item]->start->Price <= price && quantity > 0)
   {
     flag=true;
@@ -163,9 +163,9 @@ void serve_buy_request(int sd,int item, int trader, int price, int quantity)
   }
   if(quantity > 0)
   {
-    printf("bef push\n");
+    // printf("bef push\n");
     pushb(buy[item], item, trader, price, quantity);
-    printf("aft push\n");
+    // printf("aft push\n");
   }
   write(sd,"^",1);
   //return buffer;
@@ -331,12 +331,12 @@ bool search(char buffer[])      // ...............change this function
   }
   char temp[1024];
   bool flag=false;
-  printf("buff-0000-%s",buffer);
+  // printf("buff-0000-%s",buffer);
   while(fgets(temp, INT_MAX, fp) != NULL)
   {
     // int len=strlen(temp);
     //temp[len-]='\0';
-     printf("temp+0000+%s",temp);
+     // printf("temp+0000+%s",temp);
     // char a[100],b[100];
     // int j=0,k=0;
     // while(temp[j]!=' ')
@@ -579,7 +579,7 @@ int main(int argc, char *argv[])
               t3[l]='\0';
               // printf("quantity is %s\n",t3);
               quantity=atoi(t3);
-              printf("buy det %d ,, %d ,, %d ,, %d\n",item,trader,price,quantity);
+              // printf("buy det %d ,, %d ,, %d ,, %d\n",item,trader,price,quantity);
               serve_buy_request(sd,item,trader,price,quantity);
               //send(sd,resp,strlen(resp),0);
             }
@@ -618,7 +618,7 @@ int main(int argc, char *argv[])
               }
               t3[l]='\0';
               quantity=atoi(t3);
-              printf("sell det %d ,, %d ,, %d ,, %d\n",item,trader,price,quantity);
+              // printf("sell det %d ,, %d ,, %d ,, %d\n",item,trader,price,quantity);
               serve_sell_request(sd,item,trader,price,quantity);
               //send(sd,resp,strlen(resp),0);
             }
