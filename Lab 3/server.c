@@ -29,7 +29,6 @@ tqueue * trans;
 //......................warning: function returns address of local variable [-Wreturn-local-addr]
 //......................         in case of return buffer;
 //......................can resolve if it works as for available()
-//......................make the auth.txt file
 //.....................................
 //...................................
 //........................................
@@ -82,6 +81,8 @@ void available(int sd)
       flag = true;
     }
   }
+  if(flag)
+    snprintf(buffer,1000,"\n");
   if(!flag)
   {
 
@@ -105,6 +106,8 @@ void available(int sd)
       flag = true;
     }
   }
+  if(flag)
+    snprintf(buffer,1000,"\n");
   if(!flag)
   {
     bzero(buffer,1001);

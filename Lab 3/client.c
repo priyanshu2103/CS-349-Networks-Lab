@@ -8,6 +8,23 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <termios.h>
+
+int getch()
+{
+    struct termios oldtc, newtc;
+    int ch;
+    tcgetattr(STDIN_FILENO, &oldtc);
+    newtc = oldtc;
+    newtc.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newtc);
+    ch=getchar();
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldtc);
+    return ch;
+}
+
+// hide password while entering the login details
+
 int main(int argc,char* argv[])
 {
 	if(argc<3)
@@ -47,8 +64,20 @@ int main(int argc,char* argv[])
 		char password[100];
 		printf("Enter trading ID: ");
 		scanf("%s",trade_id);
+		char ch;
+		ch=getch();
 		printf("Enter your password: ");
-		scanf("%s",password);
+		// scanf("%s",password);
+	    int p=0;
+	    for (;;)
+	    {
+	        ch = getch();
+	        password[p]=ch;
+	        p++;
+	        if(ch == '\n')
+	              break;
+    	}
+    	password[p-1]='\0';
 		char response[1000];
 		strcpy(response,trade_id);
 		strcat(response," ");
