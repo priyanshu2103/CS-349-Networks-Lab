@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <termios.h>
+#include <limits.h>
 
 int getch()
 {
@@ -112,15 +113,23 @@ int main(int argc,char* argv[])
 		printf("Enter 5 to view trade status\n");
 		printf("Enter 6 to exit\n");
 
-		char *choice;
+		char choice[100];
 		char t[100];
-		scanf("%s",&choice);
+		fgets(choice,INT_MAX,stdin);
+    printf("choice is %s\n",choice);
 		if(choice[0]=='6')
 		{
 			printf("logging off\n");
 			break;
 		}
-		snprintf(t,100,"%s",choice);
+    if(choice[0]=='1'||choice[0]=='4'||choice[0]=='5')
+    {
+      snprintf(t,100,"%c",choice[0]);
+    }
+    else
+    {
+        snprintf(t,100,"%s",choice);
+    }
 		write(sock,t,strlen(t));
 		while(1)
 		{

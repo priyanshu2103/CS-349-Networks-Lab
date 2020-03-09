@@ -553,31 +553,34 @@ int main(int argc, char *argv[])
               available(sd);
               //send(sd,resp,strlen(resp),0);
             }
-            else if(buffer[0]==BUY_REQUEST)
+            else if(buffer[0]=='2')
             {
               // char *mess="Send details for buying\n";
               // write(sd,mess,strlen(mess));
+              printf("%s\n",buffer);
               int item,trader,price,quantity;
               trader=t_id;
               // valread=read(sd,buffer,1000);
               // buffer[valread]='\0';
               // printf("buffer is %s\n",buffer);
-              int j=0,k=0,l=0;
-              while(buffer[j]!=' ')
+              int j=0,m=0,k=0,l=0;
+              while(buffer[j]>='0' && buffer[j]<='9')
               {
                 j++;
               }
+              j++;
               char t1[100],t2[100],t3[100];
-              while(buffer[j]!=' ')
+              while(buffer[j]>='0' && buffer[j]<='9')
               {
-                t1[j]=buffer[j];
+                t1[m]=buffer[j];
+                m++;
                 j++;
               }
-              t1[j]='\0';
+              t1[m]='\0';
               // printf("item is %s\n",t1);
               item=atoi(t1);
               j++;
-              while(buffer[j]!=' ')
+              while(buffer[j]>='0' && buffer[j]<='9')
               {
                 t2[k]=buffer[j];
                 k++;
@@ -596,33 +599,36 @@ int main(int argc, char *argv[])
               t3[l]='\0';
               // printf("quantity is %s\n",t3);
               quantity=atoi(t3);
-              // printf("buy det %d ,, %d ,, %d ,, %d\n",item,trader,price,quantity);
+              printf("buy det %d ,, %d ,, %d ,, %d\n",item,trader,price,quantity);
               serve_buy_request(sd,item,trader,price,quantity);
               //send(sd,resp,strlen(resp),0);
             }
-            else if(buffer[0]==SELL_REQUEST)
+            else if(buffer[0]=='3')
             {
               // char *mess="Send details for selling\n";
               // write(sd,mess,strlen(mess));
+              printf("%s\n",buffer);
               int item,trader,price,quantity;
               trader=t_id;
               // valread=read(sd,buffer,1024);
               // buffer[valread]='\0';
-              int j=0,k=0,l=0;
-              while(buffer[j]!=' ')
+              int j=0,m=0,k=0,l=0;
+              while(buffer[j]>='0' && buffer[j]<='9')
               {
                 j++;
               }
+              j++;
               char t1[100],t2[100],t3[100];
-              while(buffer[j]!=' ')
+              while(buffer[j]>='0' && buffer[j]<='9')
               {
-                t1[j]=buffer[j];
+                t1[m]=buffer[j];
+                m++;
                 j++;
               }
-              t1[j]='\0';
+              t1[m]='\0';
               item=atoi(t1);
               j++;
-              while(buffer[j]!=' ')
+              while(buffer[j]>='0' && buffer[j]<='9')
               {
                 t2[k]=buffer[j];
                 k++;
@@ -639,7 +645,7 @@ int main(int argc, char *argv[])
               }
               t3[l]='\0';
               quantity=atoi(t3);
-              // printf("sell det %d ,, %d ,, %d ,, %d\n",item,trader,price,quantity);
+              printf("sell det %d ,, %d ,, %d ,, %d\n",item,trader,price,quantity);
               serve_sell_request(sd,item,trader,price,quantity);
               //send(sd,resp,strlen(resp),0);
             }
