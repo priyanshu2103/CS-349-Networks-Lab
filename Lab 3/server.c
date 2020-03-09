@@ -428,11 +428,12 @@ int main(int argc, char *argv[])
   printf("Listener on port %d \n", port);
 
   //try to specify maximum of 5 pending connections for the master socket
-  if (listen(master_socket, 5) < 0)
-  {
-    perror("listen");
-    exit(EXIT_FAILURE);
-  }
+  listen(master_socket,5);
+  // if (listen(master_socket, 5) < 0)
+  // {
+  //   perror("listen");
+  //   exit(EXIT_FAILURE);
+  // }
 
   //accept the incoming connection
   addrlen = sizeof(address);
