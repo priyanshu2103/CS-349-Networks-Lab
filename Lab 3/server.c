@@ -47,10 +47,19 @@ tqueue * trans;
 //...........................................
 //...................................................
 //ALSO TRY TO ENSURE THAT IF SERVER GOES DOWN CLIENT SHOULD BE INFORMED AND CLOSED
-//SHOULD KEEP DATA IN FILE AS IF SERVER GOES DOWN FOR ANY REASON, ALL DATA IS LOST
+//..................................................
+//..................................................
+//.......................SHOULD KEEP DATA IN FILE
+//......................................................
+//......................VERY VERY IMPORTMANT........................
+//..................................................................
+//........AS IF SERVER GOES DOWN FOR ANY REASON, ALL DATA IS LOST
 //.....................................................
 //TAKE CARE TO TRIM THE STRINGS NEEDED TO BE SENT OR RECEIVED IN SPECIAL FORMAT
 //.....................................................
+//PRINT CORRECT PRICE WHILE BUYING AND SELLING (should be selling price not cost price)
+//STOP CLIENT IF SERVER STOPS ABRUPTLY
+//CAN USE TIMESTAMP IF NEEDED
 // void send_packet(int sd,char buffer[],int k)
 // {
 //   char temp[1000];
@@ -117,14 +126,14 @@ void available(int sd)
     // write(sd,buffer,strlen(buffer);
   }
   bzero(buffer,1001);
-  snprintf(buffer,1000,"\nOn sending a buy/sell request for any of the items not listed in the respective fields, your request will be stored and served asap\n");
+  snprintf(buffer,1000,"\nOn sending a buy/sell request for any of the items not listed in the respective fields, your request will be stored and served asap^\n");
   write(sd,buffer,strlen(buffer));
   // write(sd,buffer,strlen(buffer);
  // printf("%s\n",buffer);
   //return buffer;
   // bzero(buffer,1001);
   // snprintf(buffer,1000,".");
-  write(sd,"^",1);
+  // write(sd,"^",1);
 }
 
 void serve_buy_request(int sd,int item, int trader, int price, int quantity)
@@ -544,18 +553,22 @@ int main(int argc, char *argv[])
               available(sd);
               //send(sd,resp,strlen(resp),0);
             }
-            else if(strcmp(buffer,BUY_REQUEST)==0)
+            else if(buffer[0]==BUY_REQUEST)
             {
-              char *mess="Send details for buying\n";
-              write(sd,mess,strlen(mess));
+              // char *mess="Send details for buying\n";
+              // write(sd,mess,strlen(mess));
               int item,trader,price,quantity;
               trader=t_id;
-              valread=read(sd,buffer,1000);
-              buffer[valread]='\0';
+              // valread=read(sd,buffer,1000);
+              // buffer[valread]='\0';
               // printf("buffer is %s\n",buffer);
               int j=0,k=0,l=0;
+              while(buffer[j]!=' ')
+              {
+                j++;
+              }
               char t1[100],t2[100],t3[100];
-              while(buffer[j]!='#')
+              while(buffer[j]!=' ')
               {
                 t1[j]=buffer[j];
                 j++;
@@ -564,7 +577,7 @@ int main(int argc, char *argv[])
               // printf("item is %s\n",t1);
               item=atoi(t1);
               j++;
-              while(buffer[j]!='#')
+              while(buffer[j]!=' ')
               {
                 t2[k]=buffer[j];
                 k++;
@@ -574,7 +587,7 @@ int main(int argc, char *argv[])
               // printf("price is %s\n",t2);
               price=atoi(t2);
               j++;
-              while(buffer[j]!='#')
+              while(buffer[j]>='0' && buffer[j]<='9')
               {
                 t3[l]=buffer[j];
                 l++;
@@ -587,17 +600,21 @@ int main(int argc, char *argv[])
               serve_buy_request(sd,item,trader,price,quantity);
               //send(sd,resp,strlen(resp),0);
             }
-            else if(strcmp(buffer,SELL_REQUEST)==0)
+            else if(buffer[0]==SELL_REQUEST)
             {
-              char *mess="Send details for selling\n";
-              write(sd,mess,strlen(mess));
+              // char *mess="Send details for selling\n";
+              // write(sd,mess,strlen(mess));
               int item,trader,price,quantity;
               trader=t_id;
-              valread=read(sd,buffer,1024);
-              buffer[valread]='\0';
+              // valread=read(sd,buffer,1024);
+              // buffer[valread]='\0';
               int j=0,k=0,l=0;
+              while(buffer[j]!=' ')
+              {
+                j++;
+              }
               char t1[100],t2[100],t3[100];
-              while(buffer[j]!='#')
+              while(buffer[j]!=' ')
               {
                 t1[j]=buffer[j];
                 j++;
@@ -605,7 +622,7 @@ int main(int argc, char *argv[])
               t1[j]='\0';
               item=atoi(t1);
               j++;
-              while(buffer[j]!='#')
+              while(buffer[j]!=' ')
               {
                 t2[k]=buffer[j];
                 k++;
@@ -614,7 +631,7 @@ int main(int argc, char *argv[])
               t2[k]='\0';
               price=atoi(t2);
               j++;
-              while(buffer[j]!='#')
+              while(buffer[j]>='0' && buffer[j]<='9')
               {
                 t3[l]=buffer[j];
                 l++;
