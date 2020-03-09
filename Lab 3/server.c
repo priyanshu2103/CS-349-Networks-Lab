@@ -175,9 +175,9 @@ void serve_buy_request(int sd,int item, int trader, int price, int quantity)
   }
   if(quantity > 0)
   {
-    // printf("bef push\n");
+    printf("bef push\n");
     pushb(buy[item], item, trader, price, quantity);
-    // printf("aft push\n");
+    printf("aft push\n");
   }
   write(sd,"^",1);
   //return buffer;
@@ -218,7 +218,9 @@ void serve_sell_request(int sd,int item, int trader, int price, int quantity)
   }
   if(quantity > 0)
   {
+    printf("bef push\n");
     pushs(sell[item], item, trader, price, quantity);
+    printf("aft push\n");
   }
   write(sd,"^",1);
 //  return buffer;
