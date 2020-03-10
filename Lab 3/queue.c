@@ -41,18 +41,40 @@ node * create_node(int item, int trader, int price, int count){
 }
 
 void pushs(queue * thelist, int item,int  trader,  int price, int count){
-
+if(!thelist) return;
 	node * file = create_node(item, trader, price, count);
 
-        node * point = thelist->start;
+        node *point = thelist->start;
         if(point == NULL){
 
                 thelist->start = file;
+                char f[100];
+                snprintf(f,100,"s%d.txt",item);
+                FILE *fp=fopen(f,"w");
+                fprintf(fp,"Item Seller Price Quantity\n");
+                point = thelist->start;
+                while(point!=NULL){
+
+                        fprintf(fp,"%02d %02d %04d %04d\n", point->Item_Id, point->Trader_Id, point->Price, point->count  );
+                        point = point->next;
+                }
+                fclose(fp);
                 return;
         }
         if(point->Price > price){
         	thelist->start = file;
         	file->next = point;
+          char f[100];
+          snprintf(f,100,"s%d.txt",item);
+          FILE *fp=fopen(f,"w");
+          fprintf(fp,"Item Seller Price Quantity\n");
+          point = thelist->start;
+          while(point!=NULL){
+
+                  fprintf(fp,"%02d %02d %04d %04d\n", point->Item_Id, point->Trader_Id, point->Price, point->count  );
+                  point = point->next;
+          }
+          fclose(fp);
         	return;
         }
 
@@ -63,23 +85,56 @@ void pushs(queue * thelist, int item,int  trader,  int price, int count){
         node * temp = point->next;
         point->next = file;
         file->next = temp;
+        char f[100];
+        snprintf(f,100,"s%d.txt",item);
+        FILE *fp=fopen(f,"w");
+        fprintf(fp,"Item Seller Price Quantity\n");
+        point = thelist->start;
+        while(point!=NULL){
+
+                fprintf(fp,"%02d %02d %04d %04d\n", point->Item_Id, point->Trader_Id, point->Price, point->count  );
+                point = point->next;
+        }
+        fclose(fp);
 	return;
 }
 
 void pushb(queue * thelist, int item, int trader,  int price, int count){
-
+if(!thelist) return;
 	node * file = create_node(item, trader, price, count);
 
-        node * point = thelist->start;
+        node *point = thelist->start;
         if(point == NULL){
 
                 thelist->start = file;
+                char f[100];
+                snprintf(f,100,"b%d.txt",item);
+                FILE *fp=fopen(f,"w");
+                fprintf(fp,"Item Buyer Price Quantity\n");
+                point = thelist->start;
+                while(point!=NULL){
+
+                        fprintf(fp,"%02d %02d %04d %04d\n", point->Item_Id, point->Trader_Id, point->Price, point->count  );
+                        point = point->next;
+                }
+                fclose(fp);
                 return;
         }
         if(point->Price < price){
 
         	thelist->start = file;
         	file->next = point;
+          char f[100];
+          snprintf(f,100,"b%d.txt",item);
+          FILE *fp=fopen(f,"w");
+          fprintf(fp,"Item Buyer Price Quantity\n");
+          point = thelist->start;
+          while(point!=NULL){
+
+                  fprintf(fp,"%02d %02d %04d %04d\n", point->Item_Id, point->Trader_Id, point->Price, point->count  );
+                  point = point->next;
+          }
+          fclose(fp);
         	return;
         }
 
@@ -90,21 +145,76 @@ void pushb(queue * thelist, int item, int trader,  int price, int count){
         node * temp = point->next;
         point->next = file;
         file->next = temp;
+        char f[100];
+        snprintf(f,100,"b%d.txt",item);
+        FILE *fp=fopen(f,"w");
+        fprintf(fp,"Item Buyer Price Quantity\n");
+        point = thelist->start;
+        while(point!=NULL){
+
+                fprintf(fp,"%02d %02d %04d %04d\n", point->Item_Id, point->Trader_Id, point->Price, point->count  );
+                point = point->next;
+        }
+        fclose(fp);
         return;
 
 }
 
-void pop(queue * thelist){
+void pops(queue * thelist){
 
-	if(thelist->start == NULL) return;
+	if(!thelist||thelist->start == NULL) return;
 	node * temp = thelist->start;
+  char f[100];
+  snprintf(f,100,"s%d.txt",thelist->start->Item_Id);
  	thelist->start = thelist->start->next;
  	free(temp);
+  if(!thelist||thelist->start == NULL)
+  {
 
+    FILE *fp=fopen(f,"w");
+    fprintf(fp,"Item Seller Price Quantity\n");
+    fclose(fp);
+    return;
+  }
+  FILE *fp=fopen(f,"w");
+  fprintf(fp,"Item Seller Price Quantity\n");
+  node *point = thelist->start;
+  while(point!=NULL){
+
+          fprintf(fp,"%02d %02d %04d %04d\n", point->Item_Id, point->Trader_Id, point->Price, point->count  );
+          point = point->next;
+  }
+  fclose(fp);
+}
+
+void popb(queue * thelist){
+
+	if(!thelist||thelist->start == NULL) return;
+	node * temp = thelist->start;
+  char f[100];
+  snprintf(f,100,"b%d.txt",thelist->start->Item_Id);
+ 	thelist->start = thelist->start->next;
+ 	free(temp);
+  if(!thelist||thelist->start == NULL)
+  {
+    FILE *fp=fopen(f,"w");
+    fprintf(fp,"Item Buyer Price Quantity\n");
+    fclose(fp);
+    return;
+  }
+  FILE *fp=fopen(f,"w");
+  fprintf(fp,"Item Buyer Price Quantity\n");
+  node *point = thelist->start;
+  while(point!=NULL){
+
+          fprintf(fp,"% 02d % 02d % 04d % 04d\n", point->Item_Id, point->Trader_Id, point->Price, point->count  );
+          point = point->next;
+  }
+  fclose(fp);
 }
 
 void print_queue(queue * thelist){
-
+        if(!thelist) return;
         node * point = thelist->start;
         while(point!=NULL){
 

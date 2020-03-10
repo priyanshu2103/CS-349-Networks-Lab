@@ -45,20 +45,22 @@ tnode * create_tnode(int item, int buyer, int seller,  int price, int count){
 void push(tqueue * thelist, int item,int  seller, int buyer,   int price, int count){
 
 	tnode * file = create_tnode(item, buyer, seller, price, count);
-
+  FILE *fp=fopen("transac.txt","a");
+  fprintf(fp,"%02d %02d %02d %04d %04d\n",item,buyer,seller,price,count);
+  fclose(fp);
         tnode * point = thelist->start;
         if(point == NULL){
 
                 thelist->start = file;
                 return;
         }
-        if(point->price > price){
-        	thelist->start = file;
-        	file->next = point;
-        	return;
-        }
+        // if(point->price > price){
+        // 	thelist->start = file;
+        // 	file->next = point;
+        // 	return;
+        // }
 
-        while(point->next!=NULL && point->next->price < price){
+        while(point->next!=NULL){
 
                 point = point->next;
         }

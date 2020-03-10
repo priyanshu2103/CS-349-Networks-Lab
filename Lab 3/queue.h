@@ -10,7 +10,8 @@ queue * create_queue(void);
 node * create_node(int, int, int, int);
 void pushs(queue * , int, int, int, int  );
 void pushb(queue * , int, int, int, int  );
-void pop(queue * );
+void pops(queue * );
+void popb(queue * );
 void print_queue(queue * );
 
 #endif
