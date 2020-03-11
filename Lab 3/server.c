@@ -13,7 +13,7 @@
 #include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
 #include "queue.c"
 #include "transactions.c"
-#define AVAILABLE "1"         // .............may need to make these strings
+#define AVAILABLE "1"
 #define BUY_REQUEST "2"
 #define SELL_REQUEST "3"
 #define VIEW_ORDER_STATUS "4"
@@ -22,44 +22,8 @@ queue * sell[11];
 queue * buy[11];
 tqueue * trans;
 
-//......................write all these printfs into messages to send to server  ......using snprintf for this
-//......................add print stmts in serve_buy_request and serve_sell_request
-//......................may need to terminate buffer by \0 when receiving
-//......................may need to change functions involving char * as parameter or return type
-//......................warning: function returns address of local variable [-Wreturn-local-addr]
-//......................         in case of return buffer;
-//......................can resolve if it works as for available()
-//Change input method to file based rather than command based
-//Trade_id may be string, not clearly mentioned in problem
-// ALL THIS MAY STILL NOT WORK WHILE TAKING INPUT FROM FILE AS THE SPEED OF INPUT WILL BE VERY HIGH
-// MAY USE SLEEP FUNCTION FOR THIS
-// MAKE SERVER CODE ROBUST, CURRENTLY IT STOPS IF WRONG INPUT FROM CLIENT,
-// IT SHOULD NEVER STOP, SEE HOW TO SUPPRESS ERRORS ................................
-//...........VERY VERY IMPORTANT...............
-//ALSO TRY TO ENSURE THAT IF SERVER GOES DOWN CLIENT SHOULD BE INFORMED AND CLOSED
-//.......................SHOULD KEEP DATA IN FILE
-//......................VERY VERY IMPORTANT........................
-//........AS IF SERVER GOES DOWN FOR ANY REASON, ALL DATA IS LOST
-//TAKE CARE TO TRIM THE STRINGS NEEDED TO BE SENT OR RECEIVED IN SPECIAL FORMAT
-//PRINT CORRECT PRICE WHILE BUYING AND SELLING (should be selling price not cost price)
-//..........................PRICING IS SHOWN WRONG IN SOME CASES.........................
-//STOP CLIENT IF SERVER STOPS ABRUPTLY
-//HANDLE EXCEPTIONS IF RANDOM INPUT SENT FROM CLIENT ALSO IF MULTIPLE SPACES ARE THERE LIKE 2   5 5 5 THEN PROBLEM, RESOLVE IT
-//CAN USE TIMESTAMP IF NEEDED
-// void send_packet(int sd,char buffer[],int k)
-// {
-//   char temp[1000];
-//   int l=strlen(buffer);
-//   char len[10];
-//   snprintf(len,1000,"%05d",l);
-//   strcpy(temp,len);
-//   strcat(temp,buffer);
-//   write(sd,temp,strlen(temp));
-//   printf("$$$$$%s\n",temp);
-// }
 void available(int sd)
 {
-  // printf("hello\n");
   char buffer[1000];
   bzero(buffer,1001);
   snprintf(buffer,1000,"These items are available for buying\n");
@@ -69,7 +33,6 @@ void available(int sd)
   {
     if(sell[i] && sell[i]->start!=NULL)
     {
-      //printf("%d sell\n",i);
       bzero(buffer,1001);
       snprintf(buffer,1000,"%d    ", i);
       write(sd,buffer,strlen(buffer));
@@ -136,6 +99,17 @@ void serve_buy_request(int sd,int item, int trader, int price, int quantity)
     if(sell[item]->start->count > quantity)
     {
       sell[item]->start->count = sell[item]->start->count - quantity;
+      char f[100];
+      snprintf(f,100,"s%d.txt",item);
+      FILE *fp=fopen(f,"w");
+      fprintf(fp,"Item Seller Price Quantity\n");
+      node *point = sell[item]->start;
+      while(point!=NULL){
+
+              fprintf(fp,"%02d %02d %04d %04d\n", point->Item_Id, point->Trader_Id, point->Price, point->count  );
+              point = point->next;
+      }
+      fclose(fp);
       push(trans, item, sell[item]->start->Trader_Id, trader, sell[item]->start->Price, quantity);
       bzero(buffer,1001);
       snprintf(buffer,1000,"%d number of Item %d bought from %d at Rs. %d\n", quantity, item, sell[item]->start->Trader_Id, sell[item]->start->Price);
@@ -161,9 +135,9 @@ void serve_buy_request(int sd,int item, int trader, int price, int quantity)
   }
   if(quantity > 0)
   {
-    printf("bef buy push\n");
+    // printf("bef buy push\n");
     pushb(buy[item], item, trader, price, quantity);
-    printf("aft buy push\n");
+    // printf("aft buy push\n");
   }
   write(sd,"^",1);
   //return buffer;
@@ -179,6 +153,17 @@ void serve_sell_request(int sd,int item, int trader, int price, int quantity)
     if(buy[item]->start->count > quantity)
     {
       buy[item]->start->count = buy[item]->start->count - quantity;
+      char f[100];
+      snprintf(f,100,"b%d.txt",item);
+      FILE *fp=fopen(f,"w");
+      fprintf(fp,"Item Seller Price Quantity\n");
+      node *point = buy[item]->start;
+      while(point!=NULL){
+
+              fprintf(fp,"%02d %02d %04d %04d\n", point->Item_Id, point->Trader_Id, point->Price, point->count  );
+              point = point->next;
+      }
+      fclose(fp);
       push(trans, item, trader,  buy[item]->start->Trader_Id, buy[item]->start->Price, quantity);
       bzero(buffer,1001);
       snprintf(buffer,1000,"%d number of Item %d sold to %d at Rs. %d\n", quantity, item, buy[item]->start->Trader_Id, buy[item]->start->Price);
@@ -204,9 +189,9 @@ void serve_sell_request(int sd,int item, int trader, int price, int quantity)
   }
   if(quantity > 0)
   {
-    printf("bef sell push\n");
+    // printf("bef sell push\n");
     pushs(sell[item], item, trader, price, quantity);
-    printf("aft sell push\n");
+    // printf("aft sell push\n");
   }
   write(sd,"^",1);
 //  return buffer;
@@ -220,10 +205,10 @@ void view_order(int sd)
     bzero(buffer,1001);
     snprintf(buffer,1000,"ItemID: %02d     ",  i);
     write(sd,buffer,strlen(buffer));
-    if(buy[i]->start != NULL)
+    if(sell[i]->start != NULL)
     {
       bzero(buffer,1001);
-      snprintf(buffer,1000,"Best Buy: %d     ",  buy[i]->start->Price );
+      snprintf(buffer,1000,"Best Buy: %d     ",  sell[i]->start->Price );
       write(sd,buffer,strlen(buffer));
     }
     else
@@ -232,10 +217,10 @@ void view_order(int sd)
       snprintf(buffer,1000,"<-- No buyers -->  ");
       write(sd,buffer,strlen(buffer));
     }
-    if(sell[i]->start!=NULL )
+    if(buy[i]->start!=NULL )
     {
       bzero(buffer,1001);
-      snprintf(buffer,1000,"Best Sell: %d \n", sell[i]->start->Price);
+      snprintf(buffer,1000,"Best Sell: %d \n", buy[i]->start->Price);
       write(sd,buffer,strlen(buffer));
     }
     else
@@ -307,13 +292,14 @@ void trade_status(int sd,int trader)
   // return buffer;
 }
 
-bool search(char buffer[])      // ...............change this function
+// searching in auth.txt file
+bool search(char buffer[])
 {
   strcat(buffer,"\n");
   FILE * fp=fopen("auth.txt","r");
   if(!fp)
   {
-    return false;  // ..............can write file not available if needed for closure in error handling
+    return false;
   }
   char temp[1024];
   bool flag=false;
@@ -345,10 +331,10 @@ int main(int argc, char *argv[])
       char temp[1024];
       if(fgets(temp, INT_MAX, fp))
       {
-        printf("%s",temp);
+        // printf("%s",temp);
         while(fgets(temp, INT_MAX, fp) != NULL)
         {
-          printf("%s",temp);
+          // printf("%s",temp);
           if(temp[0]>='0' && temp[0]<='9')
           {
             int item,trader,price,quantity;
@@ -425,10 +411,10 @@ int main(int argc, char *argv[])
       char temp[1024];
       if(fgets(temp, INT_MAX, fp))
       {
-        printf("%s",temp);
+        // printf("%s",temp);
         while(fgets(temp, INT_MAX, fp) != NULL)
         {
-          printf("%s",temp);
+          // printf("%s",temp);
           if(temp[0]>='0' && temp[0]<='9')
           {
             int item,trader,price,quantity;
@@ -506,7 +492,7 @@ int main(int argc, char *argv[])
   }
   //printf("%s",argv[1]);
   int port=atoi(argv[1]);
-  printf("%d\n",port);
+  // printf("%d\n",port);
   int opt = 1;
   int master_socket , addrlen , new_socket , client_socket[5] , max_clients = 5 , activity, i , valread , sd ,login[5]; // login[i]=trader_id for client_socket[i]
   int max_sd;
@@ -520,15 +506,13 @@ int main(int argc, char *argv[])
     client_socket[i] = 0;
     login[i]=-1;
   }
-
   //create a master socket
   if( (master_socket = socket(AF_INET , SOCK_STREAM , 0)) == 0)
   {
     perror("socket failed");
     exit(EXIT_FAILURE);
   }
-  //set master socket to allow multiple connections ,
-  //this is just a good habit, it will work without this
+  //set master socket to allow multiple connections
   if( setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt,sizeof(opt)) < 0 )
   {
     perror("setsockopt");
@@ -655,27 +639,21 @@ int main(int argc, char *argv[])
           {
             int t_id=login[i];
 
-            if(strcmp(buffer,AVAILABLE)==0)      // ................not sure if this strcmp works or not
+            if(strcmp(buffer,AVAILABLE)==0)
             {
               available(sd);
               //send(sd,resp,strlen(resp),0);
             }
             else if(buffer[0]=='2')
             {
-              // char *mess="Send details for buying\n";
-              // write(sd,mess,strlen(mess));
-              printf("%s\n",buffer);
               int item,trader,price,quantity;
               trader=t_id;
-              // valread=read(sd,buffer,1000);
-              // buffer[valread]='\0';
-              // printf("buffer is %s\n",buffer);
               int j=0,m=0,k=0,l=0;
               while(buffer[j]>='0' && buffer[j]<='9')
               {
                 j++;
               }
-              j++;
+              while(buffer[j]<'0' || buffer[j]>'9') j++;
               char t1[100],t2[100],t3[100];
               while(buffer[j]>='0' && buffer[j]<='9')
               {
@@ -686,7 +664,7 @@ int main(int argc, char *argv[])
               t1[m]='\0';
               // printf("item is %s\n",t1);
               item=atoi(t1);
-              j++;
+              while(buffer[j]<'0' || buffer[j]>'9') j++;
               while(buffer[j]>='0' && buffer[j]<='9')
               {
                 t2[k]=buffer[j];
@@ -696,7 +674,7 @@ int main(int argc, char *argv[])
               t2[k]='\0';
               // printf("price is %s\n",t2);
               price=atoi(t2);
-              j++;
+              while(buffer[j]<'0' || buffer[j]>'9') j++;
               while(buffer[j]>='0' && buffer[j]<='9')
               {
                 t3[l]=buffer[j];
@@ -706,25 +684,20 @@ int main(int argc, char *argv[])
               t3[l]='\0';
               // printf("quantity is %s\n",t3);
               quantity=atoi(t3);
-              printf("buy det %d ,, %d ,, %d ,, %d\n",item,trader,price,quantity);
+              // printf("buy det %d ,, %d ,, %d ,, %d\n",item,trader,price,quantity);
               serve_buy_request(sd,item,trader,price,quantity);
               //send(sd,resp,strlen(resp),0);
             }
             else if(buffer[0]=='3')
             {
-              // char *mess="Send details for selling\n";
-              // write(sd,mess,strlen(mess));
-              printf("%s\n",buffer);
               int item,trader,price,quantity;
               trader=t_id;
-              // valread=read(sd,buffer,1024);
-              // buffer[valread]='\0';
               int j=0,m=0,k=0,l=0;
               while(buffer[j]>='0' && buffer[j]<='9')
               {
                 j++;
               }
-              j++;
+              while(buffer[j]<'0' || buffer[j]>'9') j++;
               char t1[100],t2[100],t3[100];
               while(buffer[j]>='0' && buffer[j]<='9')
               {
@@ -734,7 +707,7 @@ int main(int argc, char *argv[])
               }
               t1[m]='\0';
               item=atoi(t1);
-              j++;
+              while(buffer[j]<'0' || buffer[j]>'9') j++;
               while(buffer[j]>='0' && buffer[j]<='9')
               {
                 t2[k]=buffer[j];
@@ -743,7 +716,7 @@ int main(int argc, char *argv[])
               }
               t2[k]='\0';
               price=atoi(t2);
-              j++;
+              while(buffer[j]<'0' || buffer[j]>'9') j++;
               while(buffer[j]>='0' && buffer[j]<='9')
               {
                 t3[l]=buffer[j];
@@ -752,7 +725,7 @@ int main(int argc, char *argv[])
               }
               t3[l]='\0';
               quantity=atoi(t3);
-              printf("sell det %d ,, %d ,, %d ,, %d\n",item,trader,price,quantity);
+              // printf("sell det %d ,, %d ,, %d ,, %d\n",item,trader,price,quantity);
               serve_sell_request(sd,item,trader,price,quantity);
               //send(sd,resp,strlen(resp),0);
             }

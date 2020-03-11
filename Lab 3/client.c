@@ -10,7 +10,9 @@
 #include <arpa/inet.h>
 #include <termios.h>
 #include <limits.h>
+#include <time.h>
 
+// hide password while entering the login details
 int getch()
 {
     struct termios oldtc, newtc;
@@ -23,8 +25,6 @@ int getch()
     tcsetattr(STDIN_FILENO, TCSANOW, &oldtc);
     return ch;
 }
-
-// hide password while entering the login details
 
 int main(int argc,char* argv[])
 {
@@ -68,45 +68,38 @@ int main(int argc,char* argv[])
 		char ch;
 		ch=getch();
 		printf("Enter your password: ");
-		// scanf("%s",password);
-	    int p=0;
-	    for (;;)
-	    {
-	        ch = getch();
-	        password[p]=ch;
-	        p++;
-	        if(ch == '\n')
-	              break;
-    	}
-    	password[p-1]='\0';
+
+    int p=0;
+    for (;;)
+    {
+        ch = getch();
+        password[p]=ch;
+        p++;
+        if(ch == '\n')
+              break;
+  	}
+  	password[p-1]='\0';
 		char response[1000];
 		strcpy(response,trade_id);
 		strcat(response," ");
 		strcat(response,password);
-		// strcat(response,"^");
 		write(sock,response,strlen(response));
-		// sleep(2.5);
-		// send(sock,password,strlen(password),0);
 
 		valread = read(sock,buffer,1000);
 		buffer[valread]='\0';
-		// printf("%s\n",buffer);
 		if(strcmp(buffer,"Y")==0)
 		{
 			printf("Welcome, you are logged in\n");
 			break;
 		}
 		else if(strcmp(buffer,"N")==0)
-		{
 			printf("Please enter correct ID and password\n");
-		}
 	}
 	// Trading part
 	while(1)
 	{
 		printf("Choose one of the following:\n");
 		printf("Enter 1 to see all the buyable and sellable items\n");
-		// printf("Enter 2 to see all the sellable items\n");
 		printf("Enter 2 to send buy request also enter item id <space> price <space> quantity\n");
 		printf("Enter 3 to send sell request also enter item id <space> price <space> quantity\n");
 		printf("Enter 4 to view order status\n");
@@ -116,7 +109,7 @@ int main(int argc,char* argv[])
 		char choice[100];
 		char t[100];
 		fgets(choice,INT_MAX,stdin);
-    printf("choice is %s\n",choice);
+    	printf("choice is %s\n",choice);
 		if(choice[0]=='6')
 		{
 			printf("logging off\n");
@@ -124,76 +117,87 @@ int main(int argc,char* argv[])
 		}
     if(choice[0]=='1'||choice[0]=='4'||choice[0]=='5')
     {
-      snprintf(t,100,"%c",choice[0]);
+      	snprintf(t,100,"%c",choice[0]);
+    }
+    else if(choice[0]=='2'||choice[0]=='3')
+    {
+    	int choice_num,item,price,quantity;
+    	choice_num=choice[0]-'0';
+    	// printf("%d\n",choice_num);
+      char t1[100],t2[100],t3[100],t4[100];
+      int j=1,k=0,l=0,m=0;
+      while(choice[j]==' '&&j<100)
+      	j++;
+      while(choice[j]>='0' && choice[j]<='9')
+      {
+        t1[k]=choice[j];
+        j++;
+        k++;
+      }
+      t1[k]='\0';
+      item=atoi(t1);
+      while(choice[j]==' '&&j<100)
+      	j++;
+      while(choice[j]>='0' && choice[j]<='9')
+      {
+        t3[l]=choice[j];
+        l++;
+        j++;
+      }
+      t3[l]='\0';
+      price=atoi(t3);
+      while(choice[j]==' '&&j<100)
+      	j++;
+      while(choice[j]>='0' && choice[j]<='9')
+      {
+        t4[m]=choice[j];
+        m++;
+        j++;
+      }
+      t4[m]='\0';
+      quantity=atoi(t4);
+      if(!(item>=1&&item<=10))
+      {
+      	printf("Enter item ID between 1 and 10\n");
+      	continue;
+      }
+      if(price<=0)
+      {
+      	printf("Enter positive selling price\n");
+      	continue;
+      }
+      if(quantity<=0)
+      {
+      	printf("Wrong Input, Please enter in correct format\n");
+      	continue;
+      }
+      snprintf(t,100,"%d %d %d %d",choice_num,item,price,quantity);
     }
     else
-    {
-        snprintf(t,100,"%s",choice);
-    }
+    	continue;
+
 		write(sock,t,strlen(t));
 		while(1)
 		{
 			char b[1000];
 			bzero(b,1001);
 			valread = read(sock,b,1000);
+			if(valread<0)
+			{
+				printf("Read Error\n");
+				break;
+			}
 			b[valread]='\0';
 			int j=0;
-			// if(choice[0]=='1' || choice[0]=='4' || choice[0]=='5')
-			// {
-				while(j<strlen(b) && b[j]!='^')
-				{
-					printf("%c",b[j]);
-					j++;
-				}
-				// printf("%s\n",b);
-				if(j<strlen(b) && b[j]=='^')
-				{
-					//printf("ksjksd");
-					break;
-				}
-				// printf("%s\n",buffer);
-			// }
-			// else if(choice[0]=='2' || choice[0]=='3')
-			// {
-			// 	while(j<strlen(b))
-			// 	{
-			// 		printf("%c",b[j]);
-			// 		j++;
-			// 	}
-			// 	// char it[100],pri[100],quan[100],ans[1000];
-			// 	// printf("\nEnter item id: ");
-			// 	// scanf("%s",it);
-			// 	// //write(sock,it,strlen(it));
-			// 	// printf("\nEnter price: ");
-			// 	// scanf("%s",pri);
-			// 	// //write(sock,pri,strlen(pri));
-			// 	// printf("\nEnter quantity: ");
-			// 	// scanf("%s",quan);
-			// 	// printf("\n");
-			// 	// strcpy(ans,it);
-			// 	// strcat(ans,"#");
-			// 	// strcat(ans,pri);
-			// 	// strcat(ans,"#");
-			// 	// strcat(ans,quan);
-			// 	// strcat(ans,"#");
-			// 	// write(sock,ans,strlen(ans));
-			// 	bzero(b,1001);
-			// 	valread = read(sock,b,1000);
-			// 	b[valread]='\0';
-			// 	j=0;
-			// 	while(j<strlen(b) && b[j]!='^')
-			// 	{
-			// 		printf("%c",b[j]);
-			// 		j++;
-			// 	}
-			// 	// printf("%s\n",b);
-			// 	// if(j<strlen(b) && b[j]=='^')
-			// 	// {
-			// 	// 	//printf("ksjksd");
-			// 	// 	break;
-			// 	// }
-			// 	break;
-			// }
+			while(j<strlen(b) && b[j]!='^')
+			{
+				printf("%c",b[j]);
+				j++;
+			}
+			if(j<strlen(b) && b[j]=='^')
+			{
+				break;
+			}
 		}
 	}
 	return 0;

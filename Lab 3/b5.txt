@@ -1,2 +1,0 @@
-Item Buyer Price Quantity
-05 03 0015 0015
