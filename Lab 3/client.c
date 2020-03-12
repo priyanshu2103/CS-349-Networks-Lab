@@ -109,7 +109,7 @@ int main(int argc,char* argv[])
 		char choice[100];
 		char t[100];
 		fgets(choice,INT_MAX,stdin);
-    	printf("choice is %s\n",choice);
+    	// printf("choice is %s\n",choice);
 		if(choice[0]=='6')
 		{
 			printf("logging off\n");
@@ -163,7 +163,7 @@ int main(int argc,char* argv[])
       }
       if(price<=0)
       {
-      	printf("Enter positive selling price\n");
+      	printf("Wrong Input, Please enter in correct format\n");
       	continue;
       }
       if(quantity<=0)

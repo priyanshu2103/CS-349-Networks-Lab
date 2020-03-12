@@ -40,7 +40,10 @@ void available(int sd)
     }
   }
   if(flag)
+  {
     snprintf(buffer,1000,"\n");
+    write(sd,buffer,strlen(buffer));
+  }
   if(!flag)
   {
 
@@ -65,7 +68,10 @@ void available(int sd)
     }
   }
   if(flag)
+  {
     snprintf(buffer,1000,"\n");
+    write(sd,buffer,strlen(buffer));
+  }
   if(!flag)
   {
     bzero(buffer,1001);
@@ -214,7 +220,7 @@ void view_order(int sd)
     else
     {
       bzero(buffer,1001);
-      snprintf(buffer,1000,"<-- No buyers -->  ");
+      snprintf(buffer,1000,"<-- No sellers -->  ");
       write(sd,buffer,strlen(buffer));
     }
     if(buy[i]->start!=NULL )
@@ -226,7 +232,7 @@ void view_order(int sd)
     else
     {
       bzero(buffer,1001);
-      snprintf(buffer,1000,"<-- No sellers -->\n");
+      snprintf(buffer,1000,"<-- No buyers -->\n");
       write(sd,buffer,strlen(buffer));
     }
   }
@@ -252,7 +258,7 @@ void trade_status(int sd,int trader)
     if(temp->seller == trader)
     {
       bzero(buffer,1001);
-      snprintf(buffer,1000,"%d number of Item %d sold to %d\n at Rs. %d\n", temp->quantity, temp->item, temp->buyer, temp->price);
+      snprintf(buffer,1000,"%d number of Item %d sold to %d at Rs. %d\n", temp->quantity, temp->item, temp->buyer, temp->price);
       write(sd,buffer,strlen(buffer));
     }
     temp = temp->next;
@@ -485,6 +491,89 @@ int main(int argc, char *argv[])
   }
 
   trans=create_tqueue();
+  char g[100];
+  snprintf(g,100,"transac.txt");
+  FILE *fp=fopen(g,"r");
+  if(fp)
+  {
+    char temp[1024];
+    if(fgets(temp, INT_MAX, fp))
+    {
+      // printf("%s",temp);
+      while(fgets(temp, INT_MAX, fp) != NULL)
+      {
+        // printf("%s",temp);
+        if(temp[0]>='0' && temp[0]<='9')
+        {
+          int item,buyer,seller,price,quantity;
+          char t1[100],t2[100],t3[100],t4[100],t5[100];
+          int j=0,k=0,l=0,m=0,n=0;
+          while(temp[j]>='0' && temp[j]<='9')
+          {
+            t1[j]=temp[j];
+            j++;
+          }
+          t1[j]='\0';
+          item=atoi(t1);
+          j++;
+          while(temp[j]>='0' && temp[j]<='9')
+          {
+            t2[k]=temp[j];
+            k++;
+            j++;
+          }
+          t2[k]='\0';
+          buyer=atoi(t2);
+          j++;
+          while(temp[j]>='0' && temp[j]<='9')
+          {
+            t3[l]=temp[j];
+            l++;
+            j++;
+          }
+          t3[l]='\0';
+          seller=atoi(t3);
+          j++;
+          while(temp[j]>='0' && temp[j]<='9')
+          {
+            t4[m]=temp[j];
+            m++;
+            j++;
+          }
+          t4[m]='\0';
+          price=atoi(t4);
+          j++;
+          while(temp[j]>='0' && temp[j]<='9')
+          {
+            t5[n]=temp[j];
+            n++;
+            j++;
+          }
+          t5[n]='\0';
+          quantity=atoi(t5);
+          //push in trans queue
+          tqueue *thelist=trans;
+          tnode * file = create_tnode(item, buyer, seller, price, quantity);
+          tnode * point = thelist->start;
+          if(point == NULL){
+
+                  thelist->start = file;
+          }
+          else
+          {
+            while(point->next!=NULL){
+
+                    point = point->next;
+            }
+            tnode * temp = point->next;
+            point->next = file;
+            file->next = temp;
+          }
+        }
+      }
+    }
+    fclose(fp);
+  }
   if(argc<2)
   {
     printf("Please enter server port number\n");
